@@ -1,0 +1,27 @@
+name: Check WWM Codes
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: pip install playwright requests
+      - run: playwright install --with-deps chromium
+      - name: Run checker
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python check_codes.py
+      - name: Commit seen codes
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add seen_codes.json
+          git diff --staged --quiet || git commit -m "update seen codes"
+          git push
