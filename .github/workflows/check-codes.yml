@@ -3,16 +3,20 @@ on:
   # schedule:
   #  - cron: '0 * * * *'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - run: pip install playwright requests
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium
       - run: playwright install --with-deps chromium
       - name: Run checker
         env:
